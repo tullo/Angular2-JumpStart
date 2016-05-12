@@ -1,47 +1,45 @@
-import { Component } from 'angular2/core';
-import { CORE_DIRECTIVES } from 'angular2/common';
-import { RouterLink } from 'angular2/router';
+import { Component, OnInit } from '@angular/core';
+import { ROUTER_DIRECTIVES } from '@angular/router';
 //import { Observable } from 'rxjs/Observable';
+
 import { DataService } from '../shared/services/data.service';
-import { Sorter } from '../shared/sorter';
-import { FilterTextboxComponent } from './filterTextbox.component';
-import { SortByDirective } from '../shared/directives/sortby.directive';
-import { CapitalizePipe } from '../shared/pipes/capitalize.pipe';
-import { TrimPipe } from '../shared/pipes/trim.pipe';
+import { FilterTextboxComponent } from '../filterTextbox/filterTextbox.component';
+import { CustomersCardComponent } from './customersCard.component';
+import { CustomersGridComponent } from './customersGrid.component'
+import { ICustomer, IOrder } from '../shared/interfaces';
 
 @Component({ 
+  moduleId: module.id,
   selector: 'customers', 
-  providers: [DataService],
-  templateUrl: 'app/customers/customers.component.html',
-  directives: [CORE_DIRECTIVES, RouterLink, FilterTextboxComponent, SortByDirective],
-  pipes: [CapitalizePipe, TrimPipe]
+  templateUrl: 'customers.component.html',
+  directives: [ROUTER_DIRECTIVES, FilterTextboxComponent, 
+               CustomersCardComponent, CustomersGridComponent]
 })
-export class CustomersComponent {
+export class CustomersComponent implements OnInit {
 
   title: string;
   filterText: string;
-  listDisplayModeEnabled: boolean;
-  customers: any[] = [];
-  filteredCustomers: any[] = [];
-  sorter: Sorter;
+  customers: ICustomer[] = [];
+  filteredCustomers: ICustomer[] = [];
+  displayMode: DisplayModeEnum;
+  displayModeEnum = DisplayModeEnum;
 
   constructor(private dataService: DataService) { }
   
   ngOnInit() {
     this.title = 'Customers';
     this.filterText = 'Filter Customers:';
-    this.listDisplayModeEnabled = false;
+    this.displayMode = DisplayModeEnum.Card;
 
     this.dataService.getCustomers()
-        .subscribe((customers:any[]) => {
+        .subscribe((customers: ICustomer[]) => {
           this.customers = this.filteredCustomers = customers;
         });
 
-    this.sorter = new Sorter();
   }
 
-  changeDisplayMode(mode: string) {
-      this.listDisplayModeEnabled = (mode === 'List');
+  changeDisplayMode(mode: DisplayModeEnum) {
+      this.displayMode = mode;
   }
 
   filterChanged(data: string) {
@@ -66,16 +64,10 @@ export class CustomersComponent {
     }
   }
 
-  deleteCustomer(id: number) {
+}
 
-  }
-
-  sort(prop: string) {
-      //Check for complex type such as 'state.name'
-      if (prop && prop.indexOf('.')) {
-        
-      }
-      this.sorter.sort(this.filteredCustomers, prop);
-  }
-
+enum DisplayModeEnum {
+  Card = 0,
+  Grid = 1,
+  Map = 2
 }
